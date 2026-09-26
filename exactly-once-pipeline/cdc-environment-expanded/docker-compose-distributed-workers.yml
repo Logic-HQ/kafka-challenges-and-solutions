@@ -1,0 +1,37 @@
+services:
+  # Distributed Worker Node 1
+  debezium-node-1:
+    image: debezium/connect:2.4
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - mysql-primary
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: "debezium-cluster" # Must match across nodes to form a cluster
+      CONFIG_STORAGE_TOPIC: "debezium_cluster_configs"
+      OFFSET_STORAGE_TOPIC: "debezium_cluster_offsets"
+      STATUS_STORAGE_TOPIC: "debezium_cluster_statuses"
+      # Allocate internal cluster replication properties
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+
+  # Distributed Worker Node 2 (Active Standby)
+  debezium-node-2:
+    image: debezium/connect:2.4
+    ports:
+      - "8084:8083" # Bound to a separate external port
+    depends_on:
+      - kafka
+      - mysql-primary
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: "debezium-cluster" # Joins the exact same cluster group
+      CONFIG_STORAGE_TOPIC: "debezium_cluster_configs"
+      OFFSET_STORAGE_TOPIC: "debezium_cluster_offsets"
+      STATUS_STORAGE_TOPIC: "debezium_cluster_statuses"
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
