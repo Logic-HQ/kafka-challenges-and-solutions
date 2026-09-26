@@ -1,0 +1,25 @@
+{
+  "name": "mysql-replica-ha-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    
+    /* Target your Read-Replica here to isolate production query traffic */
+    "database.hostname": "mysql-read-replica.internal.net",
+    "database.port": "3306",
+    "database.user": "debezium_cdc_user",
+    "database.password": "secure_replica_pass",
+    "database.server.id": "184055", 
+    "database.topic.prefix": "mysql_cluster",
+    
+    /* MANDATORY: Instruct Debezium to rely purely on GTID boundaries */
+    "gtid.source.filter.deduplication": "true",
+    
+    /* Capture transactional metadata for out-of-band analysis */
+    "include.schema.changes": "false",
+    "table.include.list": "bank_services.outbox_events",
+    
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.outbox"
+  }
+}
