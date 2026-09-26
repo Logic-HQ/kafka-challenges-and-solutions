@@ -1,0 +1,36 @@
+{
+  "name": "mysql-outbox-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    
+    /* Database connection settings */
+    "database.hostname": "mysql-primary",
+    "database.port": "3306",
+    "database.user": "debezium_user",
+    "database.password": "your_secure_password",
+    "database.server.id": "184054",
+    "database.server.name": "mysql_cluster",
+    
+    /* Monitor ONLY the outbox table to keep traffic clean */
+    "table.include.list": "your_db_name.outbox_events",
+    
+    /* Store connector schema history inside Kafka */
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.outbox",
+    
+    /* Ensure Debezium doesn't easily drop messages on retries */
+    "producer.enable.idempotence": "true",
+    "producer.acks": "all",
+
+    /* Outbox Event Router Transformation (SMT) Settings */
+    "transforms": "outbox",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    
+    /* Mapping your custom outbox SQL schema columns to Kafka specs */
+    "transforms.outbox.route.by.field": "aggregate_type",
+    "transforms.outbox.id.by.field": "id",
+    "transforms.outbox.route.topic.replacement": "${routedByValue}-events",
+    "transforms.outbox.table.fields.additional.placement": "event_type:header:eventType"
+  }
+}
