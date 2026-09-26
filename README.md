@@ -10,5 +10,5 @@ Clone this wiki locally:
 # Using HTTPS:
 git clone https://github.com/Logic-HQ/kafka-challenges-and-solutions.wiki.git
 # Using SSH:
-# it clone git@github.com:YOUR-USERNAME/YOUR-REPOSITORY.wiki.git
+git clone git@github.com:Logic-HQ/kafka-challenges-and-solutions.wiki.git
 ```
