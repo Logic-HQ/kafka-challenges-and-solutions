@@ -1,0 +1,19 @@
+[mysqld]
+# Unique server ID required for replication topologies
+server-id = 184054
+
+# Enable the binary log and specify file base name
+log-bin = mysql-bin
+
+# Row-level logging is MANDATORY for Debezium to catch exact cell modifications
+binlog_format = ROW
+
+# Capture full row images (both before and after states)
+binlog_row_image = FULL
+
+# Set binlog expiration (e.g., 7 days in seconds) to protect disk space
+binlog_expire_logs_seconds = 604800
+
+# Require explicit tracking of transactional metadata
+gtid_mode = ON
+enforce_gtid_consistency = ON
