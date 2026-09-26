@@ -34,3 +34,9 @@ curl -X POST -H "Content-Type: application/json" --data '{
 curl -X PUT -H "Content-Type: application/json" \
   --data '{"compatibility": "FULL"}' \
   http://localhost:8081/config/mysql_cluster.bank_services.outbox_events-value
+
+# If you are not using a dynamic DNS load balancer, update the running Debezium configuration by sending a PUT request to update the database.hostname field
+curl -X PUT -H "Content-Type: application/json" \
+  --data '{"database.hostname": "mysql-read-replica-backup.internal.net"}' \
+  http://localhost:8083/connectors/mysql-replica-ha-connector/config
+
