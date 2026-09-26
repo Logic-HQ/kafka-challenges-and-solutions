@@ -1,2 +1,14 @@
 # kafka-challenges-and-solutions
 Сollected kafka challenges and solutions.
+
+# [Challenges guide](https://github.com/Logic-HQ/kafka-challenges-and-solutions/wiki)
+
+
+
+Clone this wiki locally: 
+```bash
+# Using HTTPS:
+git clone https://github.com/Logic-HQ/kafka-challenges-and-solutions.wiki.git
+# Using SSH:
+# it clone git@github.com:YOUR-USERNAME/YOUR-REPOSITORY.wiki.git
+```
