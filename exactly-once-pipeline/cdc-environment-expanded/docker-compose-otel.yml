@@ -1,0 +1,104 @@
+version: '3.8'
+
+# OpenTelemetry & Avro expanded
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # NEW: Schema Registry to store and validate Avro Schemas
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+
+  mysql-primary:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql.cnf:/etc/mysql/conf.d/source.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secure_password
+      MYSQL_DATABASE: bank_services
+
+  redis-cache:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+
+  debezium:
+    image: debezium/connect:2.4
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - mysql-primary
+      - schema-registry
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+
+  # NEW: Jaeger All-In-One UI for inspecting trace performance
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317"   # OTLP gRPC Ingestion Port
+
+  go-app:
+    image: golang:1.21-alpine
+    depends_on:
+      - kafka
+      - redis-cache
+      - schema-registry
+      - jaeger
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: >
+      sh -c "go mod init app || true && 
+      go get ://github.com ://github.com ://github.com &&
+      go get go.opentelemetry.io/otel go.opentelemetry.io/otel/trace go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc go.opentelemetry.io/otel/sdk/trace &&
+      go get ://github.com &&
+      go run main.go"
+    environment:
+      KAFKA_BROKERS: "kafka:29092"
+      REDIS_ADDR: "redis-cache:6379"
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "jaeger:4317"
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - go-app
+
