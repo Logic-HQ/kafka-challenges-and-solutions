@@ -1,0 +1,9 @@
+  kafka-lag-exporter:
+    image: seglo/kafka-lag-exporter:0.8.2
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./kafka-lag-exporter/application.conf:/opt/docker/conf/application.conf
+    depends_on:
+      - kafka
+
