@@ -184,3 +184,17 @@ func (c *AvroTelemetryConsumer) processMessage(ctx context.Context, msg kafka.Me
 	return nil
 }
 
+// To write the Evolved Schema in Go
+const evolvedAvroSchemaLiteral = `{
+	"type": "record",
+	"name": "Value",
+	"namespace": "mysql_cluster.bank_services.outbox_events",
+	"fields": [
+		{"name": "id", "type": "string"},
+		{"name": "aggregate_type", "type": "string"},
+		{"name": "aggregate_id", "type": "string"},
+		{"name": "event_type", "type": "string"},
+		{"name": "payload", "type": "string"},
+		{"name": "tenant_id", "type": "string", "default": "default_tenant"}
+	]
+}`
