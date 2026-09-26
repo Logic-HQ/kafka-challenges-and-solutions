@@ -29,3 +29,8 @@ curl -X POST -H "Content-Type: application/json" --data '{
     "transforms.outbox.route.topic.replacement": "${routedByValue}-events"
   }
 }' http://localhost:8083/connectors
+
+# To Update the Schema Registry Policy to FULL
+curl -X PUT -H "Content-Type: application/json" \
+  --data '{"compatibility": "FULL"}' \
+  http://localhost:8081/config/mysql_cluster.bank_services.outbox_events-value
